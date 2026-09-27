@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Arcana Nocturne — Lectura de cinco cartas</title>
+<meta name="description" content="Tirada interactiva de cinco cartas con 78 arcanos dibujados en SVG. Con fines de entretenimiento y reflexión.">
+<style>
+:root{--w:58px;--lw:min(15vw,150px);--gold:#d4af37;--gold2:#f7e7a1;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:radial-gradient(ellipse at 50% 15%,#2c1854 0,#140a24 60%,#0b0516 100%),repeating-linear-gradient(45deg,#ffffff06 0 1px,transparent 1px 4px),repeating-linear-gradient(-45deg,#ffffff04 0 1px,transparent 1px 4px);color:#d9d2ee;font-family:Georgia,"Palatino Linotype",Palatino,serif;overflow-x:hidden;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+#dust{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
+.wheel{position:absolute;top:30px;left:50%;width:min(92vw,620px);aspect-ratio:1;translate:-50% 0;border-radius:50%;border:1px dashed #d4af3730;animation:sp 160s linear infinite;pointer-events:none;z-index:0}
+.wheel::before,.wheel::after{content:"";position:absolute;border-radius:50%;border:1px dotted #c9d3ea30;inset:9%}
+.wheel::after{inset:22%;border-style:dashed;border-color:#d4af3726}
+@keyframes sp{to{rotate:360deg}}
+main{position:relative;z-index:1;max-width:1000px;margin:0 auto;padding:28px 16px 48px;text-align:center}
+.k{font-variant:small-caps;letter-spacing:.35em;color:#c9d3ea;margin:0;font-size:.85rem}
+h1{margin:.2em 0;font-weight:400;font-size:clamp(1.9rem,7vw,3.4rem);letter-spacing:.28em;text-transform:uppercase;background:linear-gradient(100deg,#a9821c,#f7e7a1,#d4af37,#f7e7a1,#a9821c);background-size:220% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:sh 7s linear infinite}
+@keyframes sh{to{background-position:-220% 0}}
+.sub,#st{font-style:italic;max-width:620px;margin:.4em auto;line-height:1.55;color:#bdb3d8}
+#st{color:var(--gold2);min-height:1.5em}
+.table{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin:18px auto 8px;padding:18px 10px;border:1px solid #d4af3733;outline:1px dashed #d4af3722;outline-offset:-7px;border-radius:10px;background:#0c051a55}
+.col h2{font-variant:small-caps;letter-spacing:.3em;font-weight:400;font-size:.95rem;color:var(--gold);margin:0 0 10px}
+.slot{width:var(--lw);height:calc(var(--lw)*1.6);margin:0 auto;outline:1px dashed #d4af3777;border-radius:8px;position:relative}
+.read{margin-top:12px;opacity:0;transition:opacity 1s .3s;font-size:.9rem;line-height:1.5}
+.read.on{opacity:1}.read .cur{color:var(--gold2)}
+#ov{position:fixed;inset:0;z-index:5;display:grid;place-items:center;padding:16px;background:#0b0516d9;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);animation:fi .6s}#ov[hidden]{display:none}
+.pn{max-width:560px;max-height:90vh;overflow:auto;padding:26px 22px;border:1px solid #d4af3799;outline:1px dashed #d4af3733;outline-offset:-8px;background:#160b2b;border-radius:10px;text-align:center}
+.pn h2{margin:0 0 8px;font-weight:400;font-variant:small-caps;letter-spacing:.3em;color:var(--gold)}.pn ul{list-style:none;padding:0;margin:0;text-align:left}.pn li{margin:.7em 0;font-style:italic;line-height:1.5;font-size:.95rem}.pn li b{font-weight:400;font-style:normal;font-variant:small-caps;letter-spacing:.15em;color:var(--gold2)}#ovm{font-style:italic;line-height:1.6;border-top:1px solid #d4af3744;padding-top:12px}
+.read .lens{color:#c9d3ea;font-size:.85rem}
+.read .reflexion{font-style:italic;color:#e8e0ff;margin:.4em 0;padding:.35em 0;border-bottom:1px solid #d4af3722}
+.read details{margin-top:8px;border-top:1px solid #d4af3730;padding-top:6px}.read summary{cursor:pointer;font-variant:small-caps;letter-spacing:.18em;color:var(--gold);font-size:.8rem}.read h4{margin:.7em 0 0;font-weight:400;font-variant:small-caps;letter-spacing:.15em;color:var(--gold2);font-size:.78rem}.read details p{font-size:.8rem;line-height:1.5}
+.read h3{margin:0;font-weight:400;font-variant:small-caps;letter-spacing:.14em;color:var(--gold2);font-size:1rem}
+.read p{margin:.3em 0;font-style:italic}.read .o{font-variant:small-caps;letter-spacing:.2em;font-size:.78rem;color:#c9d3ea}.read .q{color:#a99fc9;font-size:.85rem}
+.fan{position:relative;margin:22px auto 6px;width:100%;padding-top:24px;transition:opacity .8s,height .8s}
+.fan.gone{opacity:0;pointer-events:none;height:0!important;overflow:hidden}
+.c{position:absolute;top:24px;left:50%;width:var(--w);height:calc(var(--w)*1.6);margin-left:calc(var(--w)/-2);padding:0;border:0;background:none;perspective:900px;cursor:pointer;transition:transform .5s,translate .35s;-webkit-tap-highlight-color:transparent}
+.c:hover,.c:focus-visible{translate:0 -18px;outline:none;filter:drop-shadow(0 0 8px #d4af37aa)}
+.c:focus-visible .bk{outline:2px solid var(--gold2)}
+.c.laid{position:relative;top:auto;left:auto;margin:0;width:var(--lw);height:calc(var(--lw)*1.6);transition:none;cursor:default;translate:none;filter:none}
+.in{position:absolute;inset:0;transform-style:preserve-3d;transform:rotateX(var(--rx,0deg)) rotateY(calc(var(--ry,0deg) + var(--f,0deg)));transition:transform .9s cubic-bezier(.3,.7,.2,1)}
+.c.tilt .in{transition:transform .15s}
+.bk,.fc{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:6px;overflow:hidden;box-shadow:0 6px 18px #000a}
+.fc{transform:rotateY(180deg)}
+.bk svg,.fc svg{width:100%;height:100%;display:block}
+.rev .fc svg{transform:rotate(180deg)}
+.fc::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 40%,#fffb 50%,transparent 60%);transform:translateX(-130%);pointer-events:none;mix-blend-mode:screen}
+.g .fc::after{animation:gl 1.3s .5s}
+@keyframes gl{to{transform:translateX(130%)}}
+.fc::before{content:"";position:absolute;inset:0;z-index:2;background:radial-gradient(circle at var(--mx,50%) var(--my,50%),#f7e7a155,transparent 55%);mix-blend-mode:screen;opacity:0;transition:opacity .3s;pointer-events:none}
+.c.tilt .fc::before{opacity:1}
+.btns{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin:18px 0}
+.btns button{font:inherit;font-variant:small-caps;letter-spacing:.2em;color:var(--gold2);background:#1d0f3a;border:1px solid var(--gold);padding:11px 22px;cursor:pointer;clip-path:polygon(9px 0,100% 0,100% calc(100% - 9px),calc(100% - 9px) 100%,0 100%,0 9px);transition:background .3s,color .3s}
+.btns button:hover{background:#d4af37;color:#140a24}
+.btns button:focus-visible{outline:2px solid #fff;outline-offset:2px}
+#sum{max-width:640px;margin:10px auto;padding:18px;border-top:1px solid #d4af3755;border-bottom:1px solid #d4af3755;animation:fi 1.2s}
+#sum h2{margin:0 0 6px;font-weight:400;font-variant:small-caps;letter-spacing:.3em;color:var(--gold)}
+#sum p{font-style:italic;line-height:1.6;margin:.4em 0}
+.ft{font-size:.78rem;color:#8d84ad;font-style:italic;margin-top:18px}
+@keyframes fi{from{opacity:0}}
+@media(max-width:860px){:root{--lw:min(34vw,150px)}.table{grid-template-columns:1fr}.col{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;text-align:left;align-items:start}.col h2{grid-column:1/-1}.slot{margin:0}.read{margin:0}}
+@media(prefers-reduced-motion:reduce){*,::before,::after{animation:none!important;transition-duration:.01ms!important}}
+#ov{position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;padding:18px;background:#080312e6;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+#ov.on{display:flex;animation:fi .8s}
+#ov .bx{max-width:560px;width:100%;max-height:90vh;overflow:auto;padding:26px 22px;text-align:center;background:radial-gradient(ellipse at 50% 0,#2c1854,#140a24);border:1px solid var(--gold);outline:1px dashed #d4af3744;outline-offset:-8px;border-radius:12px;box-shadow:0 0 60px #d4af3730}
+#ov h2{margin:0 0 4px;font-weight:400;font-variant:small-caps;letter-spacing:.3em;color:var(--gold2);font-size:1.25rem}
+#ov ul{list-style:none;margin:14px 0;padding:0;text-align:left}
+#ov li{margin:.6em 0;line-height:1.45;font-style:italic}
+#ov li b{font-style:normal;font-weight:400;font-variant:small-caps;letter-spacing:.14em;color:var(--gold);font-size:.85rem;display:block}
+#ov .mg{font-size:1.05rem;line-height:1.6;color:#efe9ff;margin:14px 0;font-style:italic;border-top:1px solid #d4af3755;border-bottom:1px solid #d4af3755;padding:14px 4px}
+</style></head><body>
+<canvas id="dust" aria-hidden="true"></canvas>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs id="defs"></defs></svg>
+<div class="wheel" aria-hidden="true"></div>
+<main>
+<header><p class="k">Lectura de cinco cartas</p><h1>Arcana Nocturne</h1>
+<p class="sub">Formula una pregunta en silencio, respira y elige cinco cartas del abanico: raíz de la cuestión, presente, desafío, consejo y futuro. <em>Setenta y ocho arcanos; cada uno, un espejo.</em></p></header>
+<p id="st" role="status" aria-live="polite">Elige una carta del abanico…</p>
+<section class="table" aria-label="Tirada de cinco cartas">
+<div class="col"><h2>Raíz de la cuestión</h2><div class="slot" id="s0"></div><div class="read" id="r0" aria-live="polite"></div></div>
+<div class="col"><h2>Presente</h2><div class="slot" id="s1"></div><div class="read" id="r1" aria-live="polite"></div></div>
+<div class="col"><h2>El desafío</h2><div class="slot" id="s2"></div><div class="read" id="r2" aria-live="polite"></div></div>
+<div class="col"><h2>El consejo</h2><div class="slot" id="s3"></div><div class="read" id="r3" aria-live="polite"></div></div>
+<div class="col"><h2>El futuro</h2><div class="slot" id="s4"></div><div class="read" id="r4" aria-live="polite"></div></div>
+</section>
+<section id="fan" class="fan" role="group" aria-label="Abanico de 78 cartas boca abajo. Usa flechas para moverte y Enter para elegir."></section>
+<div class="btns"><button type="button" id="bs">Barajar</button><button type="button" id="bf">Abanicar</button><button type="button" id="br" aria-pressed="false">Invertidas: no</button><button type="button" id="bm" hidden>Mensaje resumido</button></div>
+<section id="sum" hidden><h2>El hilo de la tirada</h2><p id="sp"></p><p id="sp2"></p><p id="sp3"></p><div class="btns"><button type="button" id="bm2">Ver mensaje resumido</button></div></section>
+<p class="ft">Lectura simbólica con fines de entretenimiento y autorreflexión; no sustituye consejo profesional. Orden marsellés (VIII Justicia, XI Fuerza). Interpretaciones inspiradas en Rachel Pollack y en el Curso Práctico de Tarot.</p>
+</main>
+<div id="ov" hidden role="dialog" aria-modal="true" aria-labelledby="ovt"><div class="bx"><h2 id="ovt">Mensaje de la lectura</h2><p class="sub" id="ovs"></p><ul id="ovl"></ul><p class="mg" id="ovm"></p><div class="btns"><button type="button" id="ovc">Ver lectura completa</button><button type="button" id="ovn">Nueva tirada</button></div></div></div>
+<script>
+const $=(s,e=document)=>e.querySelector(s);
+const mot=typeof matchMedia!=='undefined'?!matchMedia('(prefers-reduced-motion:reduce)').matches:true;
+const R='0 I II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI XVII XVIII XIX XX XXI'.split(' ');
+const MJ=[
+["El Loco","fool","Salto de fe: inocencia, comienzos, confiar en el instinto. Lleva tu hato sin que el pasado te gobierne.","Instinto bloqueado: miedo a arriesgar, o temeridad que huye de la quietud."],
+["El Mago","lemn","Voluntad que baja el espíritu a la tierra: crea, empieza, da forma a lo posible. Un dedo al cielo, otro al suelo.","Energía dispersa o apática; el rayo sin conexión a tierra se vuelve angustia. Ancla tu poder."],
+["La Papisa","pillars","Intuición, misterio y retiro fértil. Escucha bajo la superficie antes de actuar.","Pasividad que se vuelve miedo a la vida, o ruido que te aleja de tu voz interior."],
+["La Emperatriz","venus","Alegría de vivir, creatividad, cuidado y sensualidad: florece lo que siembras. No te lo tomes tan en serio.","Emoción reprimida o terquedad; piensa con calma lo que sientes."],
+["El Emperador","crown","Estructura, responsabilidad y constancia; aprender de los errores para materializar la idea.","Rigidez o inmadurez; control excesivo o dificultad para decidir con firmeza."],
+["El Papa","cross3","Guía, tradición y sentido: busca tu maestro interior y coherencia entre lo que crees y haces.","Dogma ciego o rebeldía sin rumbo; revisa qué creencias son realmente tuyas."],
+["El Enamorado","lovers","Elección desde el corazón: el amor te impulsa a entregarte a un camino. Asume lo que eliges.","Duda que paraliza, dependencia de voces ajenas o inmadurez afectiva."],
+["El Carro","chariot","Voluntad al mando de fuerzas opuestas: avance, independencia, victoria del presente.","Control perdido; la fuerza de voluntad sola no basta, aprende a soltar."],
+["La Justicia","scales","El espejo: mírate con objetividad y sin culpa; asume la responsabilidad de tus actos.","Autojustificación o culpa ajena; evitas ver el sentido de lo vivido."],
+["El Ermitaño","lantern","Retiro para comprender: luz interior, paciencia, aprender de tu experiencia.","Aislamiento defensivo o evasión; vuelve al encuentro con los demás."],
+["La Rueda de la Fortuna","wheel","Ciclos y cambio: todo gira. Adaptarte y leer el sentido del giro es tu poder.","Resistir lo que ya cambió; asumir tu parte abre de nuevo el movimiento."],
+["La Fuerza","mane","Mansedumbre valiente: acoger tus instintos sin reprimirlos ni dejar que te dominen.","Debilidad o impulso desbordado; la fiera reprimida ataca por sorpresa."],
+["El Colgado","hanged","Pausa fértil y entrega: cambia la mirada. A veces detenerse es avanzar.","Estancamiento y autocompasión; te quedas colgado sin aprender."],
+["La Muerte","scythe","Soltar lo que cumplió su ciclo: un duelo que limpia y transforma. Despídete para poder seguir.","Aferrarse al pasado; la inercia y el aburrimiento pueden ocultar miedo al cambio."],
+["La Templanza","temp","Integración y sosiego: un ángel que mezcla tus polos. Paciencia, fe, respuesta auténtica.","Extremos o disociación; dos versiones de ti que aún no se hablan."],
+["El Diablo","devil","La sombra y sus cadenas flojas: tentación y apego, pero también energía creativa por reconocer.","Empiezas a liberarte; duele ver las cadenas, pero verlas ya es salir."],
+["La Torre","tower","Ruptura necesaria: cae lo construido sin aire. Una conmoción que libera y despeja.","Contener el derrumbe te vuelve prisionero de la torre; deja salir lo guardado."],
+["La Estrella","star","Esperanza y curación tras la tormenta: expresarte con serenidad, sin corsés.","Cansancio o desconfianza; los canales se cierran. Vuelve a mirar el cielo."],
+["La Luna","moon","Sueños, miedos y polaridades: camina entre dos torres confiando en tu intuición.","Ilusión y angustia; pelear contra el inconsciente lo agranda."],
+["El Sol","sun","Claridad, alegría y plenitud: el niño interior libre y protegido.","Nubes pasajeras: la dicha existe pero cuesta verla; sin exceso ni fingimiento."],
+["El Juicio","horn","Llamada a renacer, perdonar y hacer inventario: una segunda oportunidad.","Ignoras la llamada por miedo; las excusas te dejan en la tumba."],
+["El Mundo","world","Realización y danza: lo interior y lo exterior se unen. Entrégate al mundo.","Estancamiento temporal; la danza espera a que te animes a empezar."]];
+const S=[["Bastos","wand","voluntad y creatividad","Actúa, pero cuida lo que tu fuego toca."],["Copas","cup","emociones y vínculos","Nombra lo que sientes y compártelo con cuidado."],["Espadas","sword","pensamiento y verdad","Piensa con claridad y acompáñalo de hechos."],["Oros","coin","recursos y vida material","Usa tus recursos y comparte una parte."]];
+const NM=['','As','Dos','Tres','Cuatro','Cinco','Seis','Siete','Ocho','Nueve','Diez','Paje','Caballero','Reina','Rey'];
+const DX=[
+"El 0 es potencial infinito: todo sigue siendo posible porque aún no se ha asumido ninguna forma. Sus experiencias no lo controlan, su energía no está dirigida y su instinto está en armonía. Aparece donde la transición es difícil.|Haz cada día una pequeña locura y pregúntate cómo actuarías si estuvieras enamorado de la vida.",
+"Canaliza el espíritu hacia la realidad: atrae lo alto y lo descarga en lo concreto. Como el chamán, recibe el poder sin que lo abrume y lo pone al servicio de la creación.|Cambia algo de sitio, inventa con lo que tienes a mano y da hoy el primer paso de tu obra.",
+"Guardiana del misterio: su sabiduría no se explica, se intuye. Habita el silencio fértil donde el inconsciente habla, pero advierte que no conviene demorarse demasiado en su umbral.|Dedica un rato a contemplar por una ventana y anota tus sueños.",
+"La naturaleza como vida subyacente: pasión, sensualidad y creatividad. El primer paso hacia la iluminación es entregarse a la experiencia sin imponerle control al sentimiento.|Cuida algo vivo, baila, cocina para otros y ríete más de ti.",
+"La ley que da estabilidad pero puede secar la pasión. Absorbe las reglas heredadas y trasciéndelas hasta formar un código personal.|Ordena tu espacio y escribe qué reglas heredadas sigues y cuáles eliges.",
+"Media entre opuestos con una doctrina. La tradición es un lugar desde donde empezar, no un sitio donde delegar tu responsabilidad.|Escribe tu sistema de creencias y visualiza a un anciano al que hacer una sola pregunta.",
+"La pasión eleva a la razón. El amor es la primera elección propia, la que se hace lejos de los padres.|Escúchate: ¿eliges desde la necesidad de ser querido, el deseo, el amor?",
+"Un ego fuerte que sostiene la tensión entre fuerzas opuestas. La voluntad sola no basta: Edipo resolvió el enigma y no se conocía.|Proponte un destino hoy y llega con las circunstancias, no a pesar de ellas.",
+"Ver la verdad y responder con acción. Lo que eres, lo hiciste tú, y por eso puedes cambiarlo; responsabilidad no es culpa.|Mírate al espejo con amor y retira de tu vocabulario «tengo que» y «hay que».",
+"Retiro hacia dentro y guía hacia fuera. El ermitaño da sabiduría al buscador sin apartarse de la humanidad.|Pasea al ritmo de tu respiración y escribe la lección de tu experiencia.",
+"El misterio del destino visto desde fuera: lo que en la visión exterior es símbolo, en la realización se vuelve vida.|Escribe tu biografía por ciclos y observa dónde te sientes víctima.",
+"Energía instintiva ni reprimida ni desatada. En alquimia, el león es azufre que se vuelve oro.|Dibuja tu aspecto más fiero, míralo con amor y pregúntale qué protege.",
+"Entrega activa: el mundo al revés. Odín colgó nueve noches para ver.|Programa cada día una «burbuja de tiempo» para bajar el ritmo.",
+"Soltar lo que cumplió su ciclo: un duelo que limpia y transforma. La muerte simulada del ego libera energía.|Escribe una carta de despedida a lo que terminó y haz limpieza de lo que ya no usas.",
+"Temperare, mezclar. Un regulador que actúa más allá del ego: integra los polos y devuelve la calma tras la crisis.|Habla con tu ángel de la guarda, escúchate antes de responder y cuenta hasta cien.",
+"Materialismo e ilusión, pero también kundalini y sombra. Solo quien ha alcanzado el equilibrio interior puede tratar con esta energía sin ser dominado.|Nombra tus facetas menos agradables: lo que más odias en otros también lo eres.",
+"Gracia, no castigo. Babel: Dios habla directo. La presión reprimida estalla si no se libera con calma.|Construye una torre de papelitos y pregúntate qué caería y qué sería lo mejor.",
+"Energía sin forma que se objetiva en tus creaciones. No es carta de acción; por ahora el viaje puede esperar.|Mira las estrellas 17 minutos y deja fluir tu imaginación.",
+"Lo que emerge del inconsciente colectivo. Los miedos aceptados se suavizan; peleados, crecen. No hay maestro visible, pero la guía recibida antes sigue sirviendo.|Dialoga con tu «perro superior» y tu «perro inferior» (Perls).",
+"El Edén interior siempre estuvo dentro. La iluminación es una experiencia, no una idea; ya sin miedo a la oscuridad.|Toma el sol, juega y haz un álbum de momentos solares.",
+"Una llamada de la que nadie se libera solo. Todas las objeciones son excusas.|Perdona lo vivido, imagina cómo se celebró tu nacimiento y reza.",
+"Unidad de acción y receptividad: la danza que integra los opuestos. La unidad está en el movimiento.|Ponte en su postura, deja que tu cuerpo se mueva y baila hoy."];
+const NX=["Una semilla: comienzo. Planta sin adelantarte al momento.|Cierra el ciclo anterior antes de empezar.","Todo se multiplica: hay más de un camino y una paradoja por resolver.|Observa y espera el mejor momento para decidir.","Nace la síntesis: sabes lo que quieres y buscas cómo llegar.|Desarrolla un plan de acción concreto.","Concretas y das forma: primera cumbre, número humano.|Ordena y haz algo con tus dones sin estancarte.","Puente y crisis: aparece lo trascendente y pide sentido.|No te quedes donde estás: hay más.","Actúas desde lo que te realiza: cielo y tierra unidos.|Persevera en lo que vale la pena y no te repitas.","Pones en marcha lo descubierto: acción y movimiento.|Que tu acción beneficie a más gente que tú.","Perfección y reflexión: la obra culminada.|No te precipites ni te estanques.","Cierre de ciclo con comprensión, tolerancia y servicio.|Realízate teniendo en cuenta tus circunstancias.","Fin y nuevo comienzo: eliges nueva dirección.|Celebra lo logrado y da la bienvenida al nuevo rumbo.","Energía joven que aún ignora el As que sostiene: duda y busca.|Plantéate qué quieres con un punto de inocencia.","Ya decidió: se concentra y carga hacia su meta; intermediario entre materia y conocimiento.|Dedícate por entero a lo que te llama por tu nombre.","Recibe lo que el Paje empezó y el Caballero persiguió: realización en su forma receptiva (Yin).|Reina con serenidad; no hace falta ceñirte la corona.","Maestría activa que genera las semillas del próximo As.|Cuida tu reino: cuerpo, gente, casa y planeta."];
+const SD=[["fuego","tu energía de acción, tu voluntad y tu creatividad","esa energía fluye: es momento de iniciar, crear y avanzar.","la energía se bloquea o se desborda: te falta ánimo o te obsesionas con lo que quieres.","¿Hacia dónde diriges tu fuego?"],["agua","tu mundo emocional, tus vínculos y tu intuición","los sentimientos fluyen y se comparten con confianza.","las emociones se cierran o se desbordan: frialdad, celos o pasiones que ciegan.","¿Qué sientes que aún no te has permitido decir?"],["aire","tu pensamiento, tu palabra y tu capacidad de discernir","hay claridad para ver la verdad y decidir.","la mente se vuelve rígida o confusa: dogmatismo, cinismo o rumores.","¿Qué verdad estás evitando pensar con claridad?"],["tierra","tu vida concreta: dinero, cuerpo, casa, trabajo y talentos","tus recursos se usan y se comparten con sentido.","los recursos se guardan sin disfrute o se descuidan: solo importa lo tangible, o cuesta valorar lo que sabes hacer.","¿Qué recurso tuyo estás subestimando o guardando?"]];
+const DV=[
+"El 0 es potencial infinito: todo sigue siendo posible porque aún no se ha asumido ninguna forma. Sus experiencias no lo controlan, su energía no está dirigida y su instinto está en armonía. Aparece donde la transición es difícil.",
+"Canaliza el espíritu hacia la realidad: atrae lo alto y lo descarga en lo concreto. Como el chamán, recibe el poder sin que lo abrume y lo pone al servicio de la creación.",
+"Guardiana del misterio: su sabiduría no se explica, se intuye. Habita el silencio fértil donde el inconsciente habla, pero advierte que no conviene demorarse demasiado en su umbral.",
+"La naturaleza como vida subyacente: pasión, sensualidad y creatividad. El primer paso hacia la iluminación es entregarse a la experiencia sin imponerle control al sentimiento.",
+"La ley que da estabilidad pero puede secar la pasión. Absorbe las reglas heredadas y trasciéndelas hasta formar un código personal.",
+"Media entre opuestos con una doctrina. La tradición es un lugar desde donde empezar, no un sitio donde delegar tu responsabilidad.",
+"La pasión eleva a la razón. El amor es la primera elección propia, la que se hace lejos de los padres.",
+"Un ego fuerte que sostiene la tensión entre fuerzas opuestas. La voluntad sola no basta: Edipo resolvió el enigma y no se conocía.",
+"Ver la verdad y responder con acción. Lo que eres, lo hiciste tú, y por eso puedes cambiarlo; responsabilidad no es culpa.",
+"Retiro hacia dentro y guía hacia fuera. El ermitaño da sabiduría al buscador sin apartarse de la humanidad.",
+"El misterio del destino visto desde fuera: lo que en la visión exterior es símbolo, en la realización se vuelve vida.",
+"Energía instintiva ni reprimida ni desatada. En alquimia, el león es azufre que se vuelve oro.",
+"Entrega activa: el mundo al revés. Odín colgó nueve noches para ver.",
+"Soltar lo que cumplió su ciclo: un duelo que limpia y transforma. La muerte simulada del ego libera energía.",
+"Temperare, mezclar. Un regulador que actúa más allá del ego: integra los polos y devuelve la calma tras la crisis.",
+"Materialismo e ilusión, pero también kundalini y sombra. Solo quien ha alcanzado el equilibrio interior puede tratar con esta energía sin ser dominado.",
+"Gracia, no castigo. Babel: Dios habla directo. La presión reprimida estalla si no se libera con calma.",
+"Energía sin forma que se objetiva en tus creaciones. No es carta de acción; por ahora el viaje puede esperar.",
+"Lo que emerge del inconsciente colectivo. Los miedos aceptados se suavizan; peleados, crecen. No hay maestro visible, pero la guía recibida antes sigue sirviendo.",
+"El Edén interior siempre estuvo dentro. La iluminación es una experiencia, no una idea; ya sin miedo a la oscuridad.",
+"Una llamada de la que nadie se libera solo. Todas las objeciones son excusas.",
+"Unidad de acción y receptividad: la danza que integra los opuestos. La unidad está en el movimiento."];
+const PR={"16-17":"Torre y Estrella se llaman entre sí: tras la conmoción llega la paz y la esperanza.","6-15":"Enamorado y Diablo: una relación que empezó en amor puede volverse trampa.","18-19":"Luna y Sol: la sencillez del Sol solo se aprecia tras atravesar el extrañamiento lunar.","7-11":"Carro y Fuerza: lo ideal es la Fuerza por dentro y el Carro por fuera, es decir, actuar con poder pero con calma.","1-2":"Mago y Papisa: acción y receptividad; la vida cobra valor cuando el flujo entre ambos circula libre.","12-13":"Colgado y Muerte: la entrega prepara el soltar; sin ella, la disolución del ego perturba.","13-14":"Muerte y Templanza: tras el cambio profundo llega el sosiego de un ángel que integra.","14-15":"Templanza y Diablo: solo quien alcanzó el equilibrio trata con seguridad la energía de la sombra.","0-21":"Loco y Mundo: el Loco es la inocencia y el Mundo la sabiduría que se conquista al recorrer el camino.","10-21":"Rueda y Mundo: lo que en la Rueda era una visión exterior, en el Mundo es realidad vivida.","8-10":"Rueda y Justicia: la visión de tu vida y la comprensión de esa visión.","2-16":"Papisa y Torre: el velo del inconsciente se rasga y la intuición se vuelve revelación.","19-20":"Sol y Juicio: la claridad se convierte en llamada a renacer.","9-17":"Ermitaño y Estrella: la luz buscada en soledad se expresa por fin con serenidad."};
+function pairs(){const m=picks.map(p=>p.k).filter(k=>k<22).sort((a,b)=>a-b),o=[];for(let i=0;i<m.length;i++)for(let j=i+1;j<m.length;j++){const t=PR[m[i]+'-'+m[j]];if(t)o.push(t)}return o.length?'Combinaciones: '+o.join(' '):''}
+const PL=["Como raíz de la cuestión, habla de lo que te trajo hasta aquí y aún resuena.","En el presente, muestra el estado de tu momento: obsérvalo sin juzgarlo.","Como desafío, señala la tensión que te pide crecer.","Como consejo, es una actitud que puedes ensayar hoy.","Como futuro, muestra una tendencia si sigues así, no una sentencia."];
+function deep(k,rv){
+  const c=deck[k];let h='';
+  if(k<22){
+    h=`<h4>Otras voces</h4><p>${DV[k]}</p>
+       <h4>Práctica</h4><p>${DX[k].split('|')[1]}</p>`;
+  }else{
+    const d=NX[c.r-1].split('|');
+    h=`<h4>El reto</h4><p>${d[1]}</p>
+       <h4>El palo</h4>
+       <p>Este palo (${SD[c.s][0]}) representa ${SD[c.s][1]}.</p>
+       <p class="${rv?'':'cur'}">Si aparece derecha, ${SD[c.s][2]}</p>
+       <p class="${rv?'cur':''}">Si aparece invertida, ${SD[c.s][3]}</p>
+       <p class="q">${SD[c.s][4]}</p>`;
+  }
+  if(rv) h+=`<h4>Invertida</h4><p>La energía de la carta está bloqueada, exagerada o desviada: no es un mal augurio, es una pista que te permite devolverte a tu cauce.</p>`;
+  return h}
+function synth(){const M=picks.filter(p=>p.k<22).length,su=[0,0,0,0];picks.forEach(p=>{const c=deck[p.k];if(c.s!==undefined)su[c.s]++});const mx=Math.max(...su),i=su.indexOf(mx);
+let t=M>=3?'Predominan los arcanos mayores: la tirada toca temas de fondo, de alma y de camino vital. ':M==0?'Solo hay arcanos menores: la lectura habla de pasos concretos y cotidianos. ':'Mayores y menores se mezclan: temas hondos que piden gestos concretos. ';
+if(mx>=2)t+=`El palo de ${S[i][0]} se repite: ${S[i][2]} pesa en tu momento. `;
+const rv=picks.filter(p=>p.isRev).length;if(rv)t+=`${rv} carta${rv>1?'s invertidas':' invertida'}: energías por desbloquear. `;
+return t+'Pregunta final: ¿qué cambiarías hoy, por pequeño que sea, después de esta lectura?'}
+const PN=['Raíz de la cuestión','Presente','El desafío','El consejo','El futuro'];
+const Q=["¿Qué origen te sostiene aún?","¿Qué te pide este momento?","¿Qué te reta a crecer?","¿Qué te aconseja tu voz interior?","¿Qué semilla puedes plantar?"];
+const deck=[];
+MJ.forEach((m,i)=>deck.push({t:m[0].toUpperCase(),n:R[i],k:m[1],u:m[2],v:m[3]}));
+const TX=[
+"Chispa de vocación: una idea con fuerza pide nacer. Es tiempo de plantar, no de cosechar.|Dos caminos y una decisión: organiza tu fuerza sin dispersarla y acepta ayuda creativa.|Ves el horizonte y trazas el viaje: planifica a largo plazo y confía en tus fuerzas.|Un sueño se consolida y se celebra; disfruta sin instalarte, la seguridad también evoluciona.|Tu fuego busca vocación propia: ya no basta cumplir normas ajenas. Encuentra tu espacio.|Superas dificultades con ayuda y diálogo; hay belleza en hacer cosas juntos.|Poder personal en acción: te sientes capaz de superar cualquier problema; no lo desperdicies.|Acción y reflexión se aúnan: tus energías opuestas pueden complementarse en un centro.|Fuerza tranquila que ilumina el camino: aprendiste de tus contradicciones, avanza sin prisa.|Final de un largo esfuerzo: compartes lo aprendido. ¿Qué cargas puedes soltar?|Energía joven y vital que piensa antes de actuar; usa la fuerza con prudencia.|Certeza para cambiar de rumbo hacia lo que te pertenece: mide, calcula y cabalga.|Fuego sagrado y creatividad diplomática: una musa independiente que sabe escuchar y expresarse.|Liderazgo creador: energía pura en acción, con autoestima y generosidad para compartir el saber.",
+"Nacen los sentimientos: renaces a nivel emocional, con la risa y el llanto a flor de piel.|Encuentro con tu polaridad: aprendes a amar y a perdonar reflejándote en el otro.|Momento dulce de diálogo y primer amor: comparte y expresa lo que sientes.|Búsqueda de un amor más elevado; el retiro que necesitas es para mirar dentro, no para cerrarte.|Unir el amor espiritual y el terrenal: aprende de tus vivencias y sigue sembrando.|Vuelves al pasado a recoger algo valioso: un recuerdo o una comprensión que te completa.|El amor se expande como enredadera hacia el sol; cuida que las ilusiones tengan raíz.|La ramita busca su árbol: define tus raíces emocionales y a qué grupo perteneces.|Dejas lo obsoleto y te renuevas: el pasado marchito puede regarse con sentido de futuro.|Emociones vivas, unión feliz y hogar; camina sobre nubes, pero regresa a tierra.|Inocencia que custodia un tesoro emocional: buenas noticias y primer amor.|El poeta que da forma a sus emociones: lleva tu copa con firmeza y alegría.|Riqueza emocional y síntesis entre corazón y razón: profunda, reservada y sensible.|Bondad y generosidad maduras: tus emociones te sostienen y sostienen a otros.",
+"Claridad mental: por fin ves el asunto pendiente. Expresa y decide con seguridad.|Forjas tu filosofía de vida: necesitas silencio, atención y estudio.|Dolor que enseña: mente y corazón discrepan. Llora, persevera y profundiza.|Retiro voluntario para escuchar tu voz interior; luego comparte lo aprendido.|Algo debe ser desenterrado y salir a la luz; tu mente puede alumbrar la noche.|Viaje interior o distancia que da una comprensión única; alejarte de lo cotidiano ayuda.|Éxito intelectual, astucia y diplomacia; no olvides el aspecto emocional de la acción.|Crisis mental fértil: direcciones contrarias que, con quietud, revelan tu verdad.|Algo se quiebra por dentro pero no se rompe: hundirte para levantarte, sin hacerlo solo.|Plenitud de conciencia: la mente aprendió a colaborar; alivio y comprensión.|Curiosidad ágil: observa, estudia y verifica antes de moverte.|Mente aguerrida que va al corazón del asunto; hay sensibilidad tras la armadura.|Intelecto activo y claridad: tomas decisiones difíciles y escuchas con criterio.|Autoconocimiento y poder mental: piensa por ti mismo y contempla muchos puntos de vista.",
+"Descubres un talento: es tiempo de concretar planes en lo cotidiano (casa, trabajo, salud).|Combinas dos fuentes o intereses; espera y confía en que se integren con tacto.|Primer fruto de tu esfuerzo: valía reconocida, ayuda y retribución justa.|Estabilidad que pide movimiento: distribuye y comparte lo que tienes.|Un tesoro sin compartir: pide ayuda, da y recibe; es la hora de la compasión.|Usa tus talentos para tus necesidades y viceversa: solo posees lo que puedes dar.|Recolección tras el esfuerzo; inversiones que pueden salir bien. Entrega una parte a la vida.|Obra terminada y estabilidad; tras el «¿y ahora qué?», busca tu propósito.|Recompensa y protección: recursos que se alimentan de tu espíritu. Disfruta y agradece.|Cumbre de la evolución material: recibiste mucho, comparte para que la energía circule.|Legado que aún no sabes manejar: deseo de vivir y de tomar lo que es tuyo.|Ritmo seguro hacia tu vocación: avanzar sin apresurarte ni detenerte.|Seguridad, abundancia y generosidad; separa el grano de la paja.|Maestría práctica y optimismo: cuida tu reino sin abusar del poder."].map(x=>x.split('|'));
+const REV=["el impulso se frena","la decisión se bloquea","la meta se aleja","el estancamiento se instala","la crisis se evita","el logro se aplaza","la acción se desvía","la obra se vacía","el cierre se niega","el ciclo no termina de cerrar","la inocencia se vuelve ceguera","el ímpetu se vuelve brusquedad","la receptividad se vuelve control","la maestría se vuelve dominio"];
+S.forEach((s,si)=>{for(let r=1;r<=14;r++){const nm=NM[r]+' de '+s[0];deck.push({t:nm.toUpperCase(),n:r==1?'AS':r<=10?r:NM[r].toUpperCase(),s:si,r,k:s[1],u:TX[si][r-1],v:`En ${s[2]}, ${REV[r-1]}: revisa el exceso o el defecto y qué evitas ver en «${nm}».`})}});
+/* motivos */
+const pts=(n,r,o=-90)=>Array.from({length:n},(_,i)=>{const a=(o+i*360/n)*Math.PI/180;return[+(r*Math.cos(a)).toFixed(1),+(r*Math.sin(a)).toFixed(1)]});
+const rays=(n,a,b)=>pts(n,1).map(([x,y])=>`M${x*a} ${y*a}L${x*b} ${y*b}`).join('');
+const star8=()=>{const o=pts(8,26),i=pts(8,10,-67.5);return'M'+o.map((p,k)=>p+'L'+i[k]).join('L')+'z'};
+const pent=r=>{const p=pts(5,r);return'M'+[0,2,4,1,3,0].map(k=>p[k]).join('L')};
+const MO={
+fool:()=>`<path d="M-30 26L-10-4l8 10 8-6 24 26"/><circle cx="14" cy="-16" r="8"/><path d="M-8-8V-16"/>`,
+lemn:()=>`<path d="M0 0C-10-18-30-16-30 0S-10 18 0 0S30-18 30 0S10 18 0 0z"/><path d="M0 8V28"/>`,
+pillars:()=>`<path d="M-20-26V26M20-26V26M-25-26h10M15-26h10M-25 26h10M15 26h10"/><path d="M2-10A10 10 0 1 0 2 10A7 7 0 1 1 2-10z"/>`,
+venus:()=>`<circle cy="-8" r="13"/><path d="M0 5V28M-9 17h18"/>`,
+crown:()=>`<path d="M-22 16V-8l11 9 11-17 11 17 11-9V16zM-22 22h44"/>`,
+cross3:()=>`<path d="M0-28V28M-8-18h16M-13-8h26M-18 2h36"/>`,
+lovers:()=>`<circle cx="-9" r="15"/><circle cx="9" r="15"/><path d="M0-32V-22M-4-27h8"/>`,
+chariot:()=>`<path d="M-24 4h48v14h-48zM-14-14h28v18h-28z"/><circle cx="-14" cy="22" r="8"/><circle cx="14" cy="22" r="8"/><path d="M0-28l4 8h-8z"/>`,
+scales:()=>`<path d="M0-26V26M-10 26h20M-24-16h48M-24-16l-8 20h16zM24-16l-8 20h16z"/>`,
+lantern:()=>`<path d="M-10-10h20v26h-20zM-6-16h12M0-26v10M-15 30L-10 16M15 30L10 16"/><circle cy="3" r="4"/>`,
+wheel:()=>`<circle r="22"/><circle r="6"/><path d="${rays(8,6,22)}"/>`,
+mane:()=>`<circle r="12"/><path d="${rays(16,15,25)}"/>`,
+hanged:()=>`<path d="M-24-26h48M0-26V20M-9 8h18M-6-4l6 6 6-6"/><circle cy="27" r="6"/>`,
+scythe:()=>`<path d="M-14 28L10-26Q28-24 30-10"/><circle cx="-18" cy="-14" r="6"/>`,
+temp:()=>`<path d="M-26-6h14l-2 14h-10zM12 14h14l-2 14h-10z"/><path d="M-12-2C0-8 8 4 16 14"/>`,
+devil:()=>`<g transform="rotate(180)"><circle r="24"/><path d="${pent(20)}"/></g>`,
+tower:()=>`<path d="M-10 28V-6h20V28zM-13-6h26l-2-8h-22z"/><path d="M6-30L-3-15h9L-4 0"/>`,
+star:()=>`<path d="${star8()}"/><path d="M-28 26q7-6 14 0t14 0t14 0t14 0"/>`,
+moon:()=>`<path d="M-4-24A24 24 0 1 0-4 24A17 17 0 1 1-4-24z"/><path d="M14 30V6h8v24M-30 30V6h8v24"/>`,
+sun:()=>`<circle r="9"/><path d="${rays(12,13,25)}"/>`,
+horn:()=>`<path d="M-26 4h18l24-16v34l-24-16h-18z"/><path d="M22-10l6-4M24 4h8M22 18l6 4"/>`,
+world:()=>`<ellipse rx="18" ry="27"/><ellipse rx="10" ry="18"/><circle r="3"/>`,
+wand:()=>`<path d="M0 28V-24M0-6q-12-2-14-14M0 6q12-2 14-14"/>`,
+cup:()=>`<path d="M-16-16h32c0 18-8 28-16 28s-16-10-16-28zM0 12v12M-10 26h20"/>`,
+sword:()=>`<path d="M0-28V14M-12 14h24M0 14v14"/>`,
+coin:()=>`<circle r="24"/><path d="${pent(16)}"/>`};
+function grid(c){const n=c.r,k=MO[c.k]();if(n==1)return`<g transform="translate(50 68) scale(1.25)" stroke-width="1.2">${k}</g>`;
+const rows=Math.ceil(n/2),sc=n>8?.3:n>6?.38:.48,sp=Math.min(30,72/rows);let o='';
+for(let i=0;i<n;i++){const odd=n%2&&i===n-1,x=odd?50:(i%2?67:33),y=68+((i>>1)-(rows-1)/2)*sp;o+=`<g transform="translate(${x} ${y}) scale(${sc})" stroke-width="${(1.6/sc).toFixed(1)}">${k}</g>`}return o}
+/* Caché de SVG por índice de carta */
+const faceCache=[];
+function face(i){
+  if(faceCache[i])return faceCache[i];
+  const c=deck[i],G='url(#g)',W='M14 112V56a36 36 0 0 1 72 0v56z';
+  let m=c.s===undefined?`<g transform="translate(50 68)">${MO[c.k]()}</g>`:c.r>10?`<g transform="translate(50 44) scale(.7)">${MO.crown()}</g><g transform="translate(50 92) scale(.85)">${MO[c.k]()}</g>`:grid(c);
+  const sp=[...Array(10)].map((_,j)=>`<circle cx="${20+(j*53+i*17)%60}" cy="${24+(j*37+i*11)%46}" r=".6" fill="#f7e7a1"/>`).join('');
+  const fs=c.t.length>16?4.6:c.t.length>12?5.6:c.t.length>8?6.6:8;
+  const svg=`<svg viewBox="0 0 100 160" aria-hidden="true"><defs><clipPath id="w${i}"><path d="${W}"/></clipPath></defs><rect width="100" height="160" fill="#1b0f30"/><rect x="2.5" y="2.5" width="95" height="155" rx="4" fill="none" stroke="${G}" stroke-width="1.6"/><rect x="5.5" y="5.5" width="89" height="149" rx="3" fill="none" stroke="${G}" stroke-width=".5" stroke-dasharray="1 1.5"/><path d="${W}" fill="#0d0620" stroke="${G}" stroke-width="1"/><g clip-path="url(#w${i})">${sp}</g><g fill="none" stroke="url(#s)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${m}</g><rect x="33" y="7.5" width="34" height="10.5" rx="5" fill="#140a24" stroke="${G}" stroke-width=".6"/><text x="50" y="15.4" text-anchor="middle" font-size="7.2" fill="${G}" font-family="Georgia,serif" letter-spacing="1">${c.n}</text><rect x="12" y="119" width="76" height="30" rx="2" fill="#140a24" stroke="${G}" stroke-width=".8"/><text x="50" y="${137+fs/3}" text-anchor="middle" font-size="${fs}" fill="${G}" font-family="Georgia,serif" letter-spacing=".9">${c.t}</text><g fill="${G}"><circle cx="10" cy="10" r="1.6"/><circle cx="90" cy="10" r="1.6"/><circle cx="10" cy="150" r="1.6"/><circle cx="90" cy="150" r="1.6"/></g></svg>`;
+  faceCache[i]=svg;
+  return svg}
+/* defs y dorso */
+$('#defs').innerHTML=`<linearGradient id="g" x1="0" y1="0" x2="100" y2="160" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#a9821c"/><stop offset=".3" stop-color="#f7e7a1"/><stop offset=".55" stop-color="#d4af37"/><stop offset=".8" stop-color="#f7e7a1"/><stop offset="1" stop-color="#a9821c"/></linearGradient><linearGradient id="s" x1="0" y1="0" x2="100" y2="160" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#8d99b8"/><stop offset=".4" stop-color="#eef3ff"/><stop offset=".7" stop-color="#b3bdd6"/><stop offset="1" stop-color="#eef3ff"/></linearGradient><pattern id="lat" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M5 0L10 5 5 10 0 5z" fill="none" stroke="#d4af3733" stroke-width=".4"/></pattern><symbol id="bk" viewBox="0 0 100 160"><rect width="100" height="160" fill="#1a0d33"/><rect width="100" height="160" fill="url(#lat)"/><rect x="3" y="3" width="94" height="154" rx="4" fill="none" stroke="url(#g)" stroke-width="1.5"/><rect x="6" y="6" width="88" height="148" fill="none" stroke="url(#g)" stroke-width=".4" stroke-dasharray="1 1.5"/><circle cx="50" cy="80" r="37" fill="#140a24" stroke="url(#g)" stroke-width="1.2"/><g transform="translate(50 80)" stroke="url(#g)" stroke-width=".5">${Array.from({length:32},(_,i)=>{const a=i*Math.PI/16;const b=i%2?27:34;return`<path d="M${(19*Math.cos(a)).toFixed(1)} ${(19*Math.sin(a)).toFixed(1)}L${(b*Math.cos(a)).toFixed(1)} ${(b*Math.sin(a)).toFixed(1)}"/>`}).join('')}</g><circle cx="50" cy="80" r="17" fill="none" stroke="url(#g)" stroke-width=".8"/><path d="M38 80Q50 70 62 80Q50 90 38 80z" fill="none" stroke="url(#s)" stroke-width=".9"/><circle cx="50" cy="80" r="3.5" fill="url(#s)"/><g fill="none" stroke="url(#s)" stroke-width=".9"><path d="M50 18a8 8 0 1 0 0 16a6 6 0 1 1 0-16z"/><path transform="rotate(180 50 80)" d="M50 18a8 8 0 1 0 0 16a6 6 0 1 1 0-16z"/></g><g fill="url(#g)"><circle cx="11" cy="11" r="1.6"/><circle cx="89" cy="11" r="1.6"/><circle cx="11" cy="149" r="1.6"/><circle cx="89" cy="149" r="1.6"/></g></symbol>`;
+/* estado */
+const root=document.documentElement,fan=$('#fan'),st=$('#st'),sum=$('#sum'),slots=[0,1,2,3,4].map(i=>$('#s'+i)),els=[];
+let fanList=[...deck.keys()],picks=[],busy=false,fi=0,kb=false,revOn=false;
+try{revOn=localStorage.getItem('an-rev')==='1'}catch(e){}
+const sleep=t=>new Promise(r=>setTimeout(r,mot?t:0));
+const setRev=()=>{$('#br').textContent='Invertidas: '+(revOn?'sí':'no');$('#br').setAttribute('aria-pressed',revOn)};setRev();
+deck.forEach((_,i)=>{const b=document.createElement('button');b.type='button';b.className='c';b.dataset.i=i;b.innerHTML='<span class="in"><span class="bk"><svg viewBox="0 0 100 160" aria-hidden="true"><use href="#bk" width="100" height="160"/></svg></span><span class="fc"></span></span>';els.push(b);fan.append(b)});
+function fy(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}}
+function layout(){const W=fan.clientWidth,w=Math.max(44,Math.min(70,W/9)),h=w*1.6,D=W*.7+h/2;root.style.setProperty('--w',w+'px');
+const n=fanList.length,half=(n-1)/2||1,am=Math.min(34,Math.asin(Math.min(.95,(W/2-w/2-8)/(D-h/2)))*180/Math.PI),drop=(D-h/2)*(1-Math.cos(am*Math.PI/180));
+if(!fan.classList.contains('gone'))fan.style.height=(h+drop+64)+'px';
+fi=Math.min(fi,Math.max(0,n-1));
+fanList.forEach((k,p)=>{const e=els[k];e.style.transformOrigin=`50% ${D}px`;e.style.transform=`rotate(${(p-(n-1)/2)*am/half}deg)`;e.style.zIndex=p;e.tabIndex=p===fi?0:-1;e.setAttribute('aria-label','Carta boca abajo '+(p+1)+' de '+n)})}
+/* Debounce para resize */
+let resizeT=null;
+addEventListener('resize',()=>{if(resizeT)clearTimeout(resizeT);resizeT=setTimeout(()=>{resizeT=null;layout()},100)});
+fy(fanList);layout();
+function draw(k){if(busy||picks.length>=5)return;busy=true;const e=els[k],pos=picks.length,isRev=revOn&&Math.random()<.34;
+fanList=fanList.filter(x=>x!==k);picks.push({k,isRev});
+const f=e.getBoundingClientRect();e.classList.add('laid');e.style.transform='none';e.style.zIndex=1;e.tabIndex=-1;slots[pos].append(e);const l=e.getBoundingClientRect();
+layout();st.textContent='Carta '+(pos+1)+' de 5…';
+e.style.transformOrigin='0 0';
+e.animate([{transform:`translate(${f.left-l.left}px,${f.top-l.top}px) scale(${f.width/l.width})`},{transform:'none'}],{duration:mot?750:1,easing:'cubic-bezier(.3,.7,.2,1)'}).finished.then(()=>{
+e.querySelector('.fc').innerHTML=face(k);if(isRev)e.classList.add('rev');e.style.setProperty('--f','180deg');e.classList.add('g');e.setAttribute('aria-label',deck[k].t);
+const c=deck[k],r=$('#r'+pos);
+const reflexion = k<22 ? `<p class="reflexion">${isRev?c.v:c.u}</p>` : '';
+r.innerHTML=`<h3>${c.t}</h3><p class="o">${isRev?'Invertida':'Derecha'}</p>${reflexion}<p class="lens">${PL[pos]}</p><details open><summary>Profundizar</summary>${deep(k,isRev)}<p class="q">${Q[pos]}</p></details>`;
+r.classList.add('on');
+if(pos==4)finish();else st.textContent='Elige la siguiente carta.';
+busy=false;if(kb&&fanList.length)els[fanList[fi]].focus({preventScroll:true})}).catch(()=>{busy=false})}
+function finish(){
+const n=picks.map(p=>'«'+deck[p.k].t.toLowerCase()+'»'),rv=picks.some(p=>p.isRev);
+$('#sp').textContent=
+`Cinco cartas, un mismo hilo: La raíz de la cuestión ${n[0]} sostiene lo que hoy vives, en el presente ${n[1]}; `+
+`el desafío ${n[2]} se atiende con el consejo ${n[3]}, y así se abre el camino hacia el futuro ${n[4]}. `+
+`Toma de cada una solo lo que resuene contigo; el camino lo decides tú.`+
+(rv?' Las cartas invertidas señalan energías por desbloquear, no sentencias.':'');
+$("#sp2").textContent=synth();$("#sp3").textContent=pairs();$("#bm").hidden=false;$("#bm2").hidden=false;
+setTimeout(openOv,mot?1600:0);sum.hidden=false;fan.classList.add('gone');fan.style.height='0px';st.textContent='La tirada está completa. Respira y relee con calma.'}
+fan.addEventListener('click',e=>{const c=e.target.closest('.c');if(c&&!c.classList.contains('laid')){kb=e.detail===0;draw(+c.dataset.i)}});
+fan.addEventListener('keydown',e=>{const n=fanList.length,m={ArrowRight:1,ArrowLeft:-1,Home:-1e3,End:1e3}[e.key];if(m===undefined)return;e.preventDefault();kb=true;fi=Math.max(0,Math.min(n-1,fi+m));layout();els[fanList[fi]].focus({preventScroll:true})});
+function clearTable(){picks=[];slots.forEach((s,i)=>{const e=s.firstElementChild;if(e){e.className='c';e.style.cssText='';e.querySelector('.fc').innerHTML='';fan.append(e)}$('#r'+i).className='read';$('#r'+i).innerHTML=''});fanList=[...deck.keys()];sum.hidden=true;$("#bm").hidden=true;$("#bm2").hidden=true;$("#ov").classList.remove('on')}
+async function shuffle(){if(busy)return;busy=true;clearTable();fan.classList.remove('gone');layout();st.textContent='Barajando…';await sleep(60);
+const dx=Math.min(120,fan.clientWidth*.14);fanList.forEach((k,p)=>els[k].style.translate=`${p<39?-dx:dx}px 0`);await sleep(450);
+fy(fanList);layout();await sleep(350);fanList.forEach(k=>els[k].style.translate='');await sleep(500);fi=0;layout();st.textContent='Elige una carta del abanico…';busy=false}
+$('#bs').onclick=shuffle;$('#bf').onclick=()=>{if(picks.length===5||fan.classList.contains('gone'))shuffle();else layout()};
+$('#br').onclick=()=>{revOn=!revOn;try{localStorage.setItem('an-rev',revOn?'1':'0')}catch(e){}setRev()};
+/* inclinación y brillo */
+document.addEventListener('pointermove',e=>{const c=e.target.closest&&e.target.closest('.c.laid');if(!c||!c.classList.contains('g'))return;const r=c.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;c.classList.add('tilt');c.style.setProperty('--ry',((x-.5)*22)+'deg');c.style.setProperty('--rx',((.5-y)*22)+'deg');c.style.setProperty('--mx',x*100+'%');c.style.setProperty('--my',y*100+'%')});
+document.addEventListener('pointerout',e=>{const c=e.target.closest&&e.target.closest('.c.laid');if(c&&!c.contains(e.relatedTarget)){c.classList.remove('tilt');c.style.setProperty('--rx','0deg');c.style.setProperty('--ry','0deg')}});
+/* polvo de estrellas */
+const cv=$('#dust'),cx=cv.getContext('2d');let pw,ph,ps=[],mx=0,raf;
+function rs(){const d=Math.min(2,devicePixelRatio||1);pw=innerWidth;ph=innerHeight;cv.width=pw*d;cv.height=ph*d;cx.setTransform(d,0,0,d,0,0);ps=Array.from({length:Math.round(pw*ph/9000)+40},()=>({x:Math.random()*pw,y:Math.random()*ph,r:Math.random()*1.3+.3,z:Math.random(),t:Math.random()*6.28,c:Math.random()<.6?'#f7e7a1':'#c9d3ea'}));if(mot)tick(0)}
+function tick(t){cx.clearRect(0,0,pw,ph);for(const p of ps){if(mot){p.y-=.08+p.z*.12;if(p.y<-4){p.y=ph+4;p.x=Math.random()*pw}}const tw=.5+.5*Math.sin(t/700+p.t*9);cx.globalAlpha=.2+.6*tw*p.z+.15;cx.fillStyle=p.c;cx.beginPath();cx.arc(p.x+mx*p.z*14,p.y,p.r*(p.z>.85?1.8:1),0,6.283);cx.fill()}if(mot)raf=requestAnimationFrame(tick)}
+addEventListener('resize',()=>{cancelAnimationFrame(raf);rs();if(mot)raf=requestAnimationFrame(tick)});
+/* pointermove global solo si hay motion */
+if(mot)addEventListener('pointermove',e=>{mx=e.clientX/innerWidth-.5});
+document.addEventListener('visibilitychange',()=>{cancelAnimationFrame(raf);if(!document.hidden&&mot)raf=requestAnimationFrame(tick)});
+let lastF=null;const ov=$('#ov');
+function openOv(){if(picks.length<5)return;
+$('#ovl').innerHTML=picks.map((p,i)=>{const c=deck[p.k],t=(p.isRev?c.v:c.u).split(/[;.]/)[0];return`<li><b>${PN[i]} · ${c.t}${p.isRev?' (invertida)':''}</b>${t}.</li>`}).join('');
+const n=picks.map(p=>'«'+deck[p.k].t.toLowerCase()+'»'),rv=picks.filter(p=>p.isRev).length;
+$('#ovs').textContent=synth().split('. ')[0]+'.';
+$('#ovm').textContent=
+`La raíz de la cuestión ${n[0]} sostiene lo que hoy vives, en el presente ${n[1]}. `+
+`El desafío ${n[2]} se atiende con el consejo ${n[3]}, y así se abre el futuro ${n[4]}.`+
+(rv?' Donde hay cartas invertidas, devuelve a esa energía su cauce.':'')+
+' Respira, elige un gesto pequeño y hazlo hoy.';
+lastF=document.activeElement;ov.classList.add('on');$('#ovc').focus()}
+function closeOv(){ov.classList.remove('on');if(lastF&&lastF.focus)lastF.focus()}
+$('#ovc').onclick=closeOv;$('#bm').onclick=openOv;$('#bm2').onclick=openOv;$('#ovn').onclick=()=>{closeOv();shuffle()};
+ov.addEventListener('click',e=>{if(e.target===ov)closeOv()});
+document.addEventListener('keydown',e=>{if(!ov.classList.contains('on'))return;if(e.key==='Escape')closeOv();if(e.key==='Tab'){const b=[$('#ovc'),$('#ovn')],i=b.indexOf(document.activeElement);e.preventDefault();b[(i+(e.shiftKey?-1:1)+2)%2].focus()}});
+rs();if(mot)raf=requestAnimationFrame(tick);
+</script></body></html>
