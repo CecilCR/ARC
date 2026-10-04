@@ -63,6 +63,15 @@ h1{margin:.2em 0;font-weight:400;font-size:clamp(1.9rem,7vw,3.4rem);letter-spaci
 #sum p{font-style:italic;line-height:1.6;margin:.4em 0}
 .ft{font-size:.78rem;color:#8d84ad;font-style:italic;margin-top:18px}
 @keyframes fi{from{opacity:0}}
+.ask,.mine{max-width:620px;margin:14px auto;text-align:left}
+.ask label,.mine label,.gt{display:block;font-variant:small-caps;letter-spacing:.2em;color:var(--gold);font-size:.8rem;margin-bottom:6px}
+.ask input,.mine textarea{width:100%;font:inherit;font-size:1rem;color:#efe9ff;background:#0c051aaa;border:1px solid #d4af3766;border-radius:6px;padding:10px 12px;resize:vertical}
+.ask input:focus,.mine textarea:focus{outline:2px solid var(--gold2);outline-offset:1px}
+#sq{font-style:italic;color:var(--gold2);margin:.2em 0 .8em}
+#gq{text-align:left;margin:.4em 0 1em;padding-left:1.3em;line-height:1.6;color:#e8e0ff;font-size:.92rem}
+#gq li{margin:.4em 0}
+.gt{margin-top:1em;text-align:left}
+.col:nth-child(4) .slot{outline-color:var(--gold);box-shadow:0 0 22px #d4af3744}
 @media(max-width:860px){:root{--lw:min(34vw,150px)}.table{grid-template-columns:1fr}.col{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;text-align:left;align-items:start}.col h2{grid-column:1/-1}.slot{margin:0}.read{margin:0}}
 @media(prefers-reduced-motion:reduce){*,::before,::after{animation:none!important;transition-duration:.01ms!important}}
 #ov{position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;padding:18px;background:#080312e6;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
@@ -85,6 +94,7 @@ h1{margin:.2em 0;font-weight:400;font-size:clamp(1.9rem,7vw,3.4rem);letter-spaci
 <h1>Arcana Nocturne</h1>
 <p class="sub">Formula una pregunta en silencio, respira y elige cinco cartas del abanico: raíz de la cuestión, presente, desafío, consejo y futuro. <em>Setenta y ocho arcanos; cada uno, un espejo.</em></p>
 </header>
+<div class="ask"><label for="q">Tu pregunta (opcional)</label><input id="q" type="text" maxlength="140" placeholder="¿Qué quiero comprender hoy?" autocomplete="off"></div>
 <p id="st" role="status" aria-live="polite">Elige una carta del abanico…</p>
 <section class="table" aria-label="Tirada de cinco cartas">
 <div class="col"><h2>Raíz de la cuestión</h2><div class="slot" id="s0"></div><div class="read" id="r0" aria-live="polite"></div></div>
@@ -101,10 +111,14 @@ h1{margin:.2em 0;font-weight:400;font-size:clamp(1.9rem,7vw,3.4rem);letter-spaci
 </div>
 <section id="sum" hidden>
 <h2>El hilo de la tirada</h2>
+<p id="sq"></p>
 <p id="sp"></p>
 <p id="sp2"></p>
 <p id="sp3"></p>
-<div class="btns"><button type="button" id="bm2">Ver mensaje resumido</button></div>
+<p class="gt">Preguntas para tu reflexión</p>
+<ol id="gq"></ol>
+<div class="mine"><label for="note">Mi reflexión</label><textarea id="note" rows="4" placeholder="¿Qué resuena? ¿Qué me incomoda? ¿Qué gesto haré hoy?"></textarea></div>
+<div class="btns"><button type="button" id="bm2">Ver mensaje resumido</button><button type="button" id="bc">Copiar lectura</button></div>
 </section>
 <p class="ft">Lectura simbólica con fines de entretenimiento y autorreflexión; no sustituye consejo profesional. Orden marsellés (VIII Justicia, XI Fuerza). Interpretaciones inspiradas en Rachel Pollack y en el Curso Práctico de Tarot.</p>
 </main>
@@ -291,24 +305,54 @@ const RES_FASE = {
   13: "en su maestría receptiva",
   14: "en su maestría activa"
 };
-const AF_PALO = {
-  Bastos: "Reconozco mi fuerza y la pongo en acción para crear lo que quiero.",
-  Copas: "Reconozco lo que siento y le doy un lugar en mi vida.",
-  Espadas: "Reconozco lo que pienso y busco la verdad con claridad.",
-  Oros: "Reconozco mis recursos y los uso con sensatez."
-};
-const AFI_PALO = {
-  Bastos: "Reconozco que a veces mi energía se dispersa o se bloquea.",
-  Copas: "Reconozco que a veces me cuesta nombrar o compartir lo que siento.",
-  Espadas: "Reconozco que a veces mi mente se rigidiza o se confunde.",
-  Oros: "Reconozco que a veces descuido o malgasto lo que tengo."
-};
-const ACT_PALO = {
-  Bastos: "Haz hoy una acción concreta, por pequeña que sea, hacia algo que quieras crear.",
-  Copas: "Nombra hoy una emoción que sientes y compártela con alguien de confianza.",
-  Espadas: "Escribe una verdad que estás evitando pensar y sostenla cinco minutos sin juzgarla.",
-  Oros: "Revisa un recurso tuyo (dinero, tiempo, energía) y decide un uso consciente para hoy."
-};
+const XM={Bastos:"mi impulso creativo",Copas:"mis emociones",Espadas:"mis ideas",Oros:"mis recursos"};
+const XT={Bastos:"tu impulso creativo",Copas:"tus emociones",Espadas:"tus ideas",Oros:"tus recursos"};
+/* Una afirmación, una inversión y una práctica por rango (1–14); el palo aporta el matiz */
+const AFR=[
+x=>`Dejo nacer ${x} sin esperar a que todo esté listo.`,
+x=>`Elijo con calma entre dos caminos para ${x}.`,
+x=>`Doy forma a ${x} con un plan y con ayuda.`,
+x=>`Sostengo ${x} sobre una base estable.`,
+x=>`Atravieso la tensión que sacude ${x} y aprendo de ella.`,
+x=>`Comparto ${x} y recibo lo que otros me ofrecen.`,
+x=>`Defiendo ${x} con determinación y sin dureza.`,
+x=>`Perfecciono ${x} con paciencia y constancia.`,
+x=>`Reconozco lo que ya logré con ${x}.`,
+x=>`Cierro un ciclo con ${x} y abro espacio a lo nuevo.`,
+x=>`Exploro ${x} con curiosidad de aprendiz.`,
+x=>`Llevo ${x} hacia adelante con ímpetu y cuidado.`,
+x=>`Escucho ${x} y la acojo con sensibilidad.`,
+x=>`Dirijo ${x} con madurez y generosidad.`];
+const AFIR=[
+x=>`Reconozco que a veces freno ${x} antes de empezar.`,
+x=>`Reconozco que a veces la duda bloquea ${x}.`,
+x=>`Reconozco que a veces ${x} se queda en planes sin acción.`,
+x=>`Reconozco que a veces me aferro a ${x} por miedo a perder lo que tengo.`,
+x=>`Reconozco que a veces evito la crisis que pide atender ${x}.`,
+x=>`Reconozco que a veces hay desequilibrio entre dar y recibir en ${x}.`,
+x=>`Reconozco que a veces desvío ${x} hacia peleas que no son mías.`,
+x=>`Reconozco que a veces repito rutinas vacías con ${x}.`,
+x=>`Reconozco que a veces no valoro lo que ya logré con ${x}.`,
+x=>`Reconozco que a veces me cuesta cerrar un ciclo con ${x}.`,
+x=>`Reconozco que a veces la ingenuidad me ciega ante ${x}.`,
+x=>`Reconozco que a veces actúo con brusquedad con ${x}.`,
+x=>`Reconozco que a veces intento controlar ${x} en vez de escuchar.`,
+x=>`Reconozco que a veces uso ${x} para dominar más que para servir.`];
+const ACTR=[
+t=>`Da hoy el primer paso mínimo con ${t}.`,
+t=>`Anota dos opciones para ${t} y su costo real; decide una.`,
+t=>`Escribe un plan de tres pasos para ${t} y pide ayuda a alguien.`,
+t=>`Dedica 10 minutos a ordenar y asegurar ${t}.`,
+t=>`Nombra el conflicto que sacude ${t} y escribe qué aprendes de él.`,
+t=>`Comparte hoy algo de ${t} con alguien y agradece lo que recibes.`,
+t=>`Elige una batalla que sí es tuya con ${t} y prepara tu respuesta.`,
+t=>`Trabaja 25 minutos en perfeccionar un detalle de ${t}.`,
+t=>`Haz una lista de tres logros con ${t} y celébralos.`,
+t=>`Despídete por escrito de lo que ya terminó con ${t}.`,
+t=>`Investiga algo nuevo sobre ${t} y toma tres notas.`,
+t=>`Da un paso audaz con ${t}, pero revisa antes qué podrías dañar.`,
+t=>`Siéntate 5 minutos en silencio y escucha qué necesita ${t}.`,
+t=>`Usa ${t} hoy para ayudar a alguien más.`];
 
 /* ============================================================
    CONSTRUCCIÓN DEL MAZO
@@ -341,15 +385,15 @@ function afirmacion(k, c, rv){
   if(k < 22) return rv ? (AFI[k]||'') : (AF[k]||'');
   if(!c || c.s === undefined) return '';
   const palo = S[c.s][0];
-  return rv ? AFI_PALO[palo] : AF_PALO[palo];
+  return (rv ? AFIR : AFR)[c.r-1](XM[palo]);
 }
 function actividad(k, c){
   if(k < 22) return ACT[k] || '';
   if(!c || c.s === undefined) return '';
-  return ACT_PALO[S[c.s][0]];
+  return ACTR[c.r-1](XT[S[c.s][0]]);
 }
 function deep(k, rv){
-  if(!rv) return '';
+  if(!rv || k >= 22) return '';
   return `<p class="linea"><b>Invertida</b>La energía de la carta está bloqueada, exagerada o desviada: no es un mal augurio, es una pista para devolverte a tu cauce.</p>`;
 }
 
@@ -438,7 +482,7 @@ function face(i){
   let m=c.s===undefined
     ?`<g transform="translate(50 68)">${MO[c.k]()}</g>`
     :c.r>10
-      ?`<g transform="translate(50 44) scale(.7)">${MO.crown()}</g><g transform="translate(50 92) scale(.85)">${MO[c.k]()}</g>`
+      ?`<g transform="translate(50 44) scale(.7)">${MO[['fool','chariot','venus','crown'][c.r-11]]()}</g><g transform="translate(50 92) scale(.85)">${MO[c.k]()}</g>`
       :grid(c);
   const sp=[...Array(10)].map((_,j)=>`<circle cx="${20+(j*53+i*17)%60}" cy="${24+(j*37+i*11)%46}" r=".6" fill="#f7e7a1"/>`).join('');
   const fs=c.t.length>16?4.6:c.t.length>12?5.6:c.t.length>8?6.6:8;
@@ -585,6 +629,14 @@ function finish(){
     (rv?' Las cartas invertidas señalan energías por desbloquear, no sentencias.':'');
   $('#sp2').textContent=synth();
   $('#sp3').textContent=pairs();
+  const q=$('#q').value.trim();
+  $('#sq').textContent=q?'Tu pregunta: «'+q+'»':'';
+  const T=picks.map(p=>deck[p.k].t.toLowerCase());
+  $('#gq').innerHTML=[
+    `¿Qué une «${T[0]}» con «${T[4]}»? ¿Qué cambió entre el origen y el rumbo?`,
+    `¿Qué carta te incomodó o te alegró más, y qué dice eso de ti?`,
+    `Con «${T[3]}» como consejo, ¿qué gesto concreto harás en las próximas 24 horas?`
+  ].map(x=>`<li>${x}</li>`).join('');
   $('#bm').hidden=false;
   $('#bm2').hidden=false;
   sum.hidden=false;
@@ -592,7 +644,7 @@ function finish(){
   fan.inert=true;
   fan.style.height='0px';
   st.textContent='La tirada está completa. Respira y relee con calma.';
-  setTimeout(openOv,mot?1600:0);
+  setTimeout(()=>sum.scrollIntoView({behavior:mot?'smooth':'auto',block:'start'}),mot?1200:0);
 }
 
 /* ============================================================
@@ -634,12 +686,15 @@ function clearTable(){
   $('#bm').hidden=true;
   $('#bm2').hidden=true;
   $('#ov').classList.remove('on');
+  $('#note').value='';
+  $('#sq').textContent='';
   clearState();
 }
 
 async function shuffle(){
   if(busy)return;
   busy=true;
+  scrollTo({top:0,behavior:mot?'smooth':'auto'});
   clearTable();
   fan.inert=false;
   fan.classList.remove('gone');
@@ -730,6 +785,19 @@ if(mot)raf=requestAnimationFrame(tick);
 /* ============================================================
    MENSAJE RESUMIDO
    ============================================================ */
+function copyReading(){
+  const q=$('#q').value.trim(),pos=['Raíz de la cuestión','Presente','El desafío','El consejo','El futuro'];
+  const L=['ARCANA NOCTURNE — Lectura de cinco cartas',new Date().toLocaleDateString('es-PE')];
+  if(q)L.push('Pregunta: '+q);
+  picks.forEach((p,i)=>{const c=deck[p.k];L.push('',pos[i]+': '+c.t+(p.isRev?' (invertida)':''),p.isRev?c.v:c.u,'Práctica: '+actividad(p.k,c))});
+  L.push('',$('#sp').textContent,'',$('#sp2').textContent,'',consejoPractico());
+  const n=$('#note').value.trim();
+  if(n)L.push('','Mi reflexión:',n);
+  const b=$('#bc'),t=b.textContent;
+  (navigator.clipboard?navigator.clipboard.writeText(L.join('\n')):Promise.reject())
+    .then(()=>{b.textContent='Copiado ✓'}).catch(()=>{b.textContent='No se pudo copiar'})
+    .finally(()=>setTimeout(()=>{b.textContent=t},2000));
+}
 let lastF=null;
 const ov=$('#ov');
 function openOv(){
@@ -739,7 +807,8 @@ function openOv(){
     const t=(p.isRev?c.v:c.u).split(/[;.]/)[0];
     return `<li><b>${['Raíz de la cuestión','Presente','El desafío','El consejo','El futuro'][i]} · ${c.t}${p.isRev?' (invertida)':''}</b>${t}.</li>`;
   }).join('');
-  $('#ovs').textContent=synth().split('. ')[0]+'.';
+  const q=$('#q').value.trim();
+  $('#ovs').textContent=(q?'Tu pregunta: «'+q+'». ':'')+synth().split('. ')[0]+'.';
   $('#ovm').textContent=consejoPractico()+' Respira y hazlo hoy, por pequeño que sea.';
   lastF=document.activeElement;
   ov.classList.add('on');
@@ -752,6 +821,7 @@ function closeOv(){
 $('#ovc').onclick=closeOv;
 $('#bm').onclick=openOv;
 $('#bm2').onclick=openOv;
+$('#bc').onclick=copyReading;
 $('#ovn').onclick=()=>{closeOv();shuffle()};
 ov.addEventListener('click',e=>{if(e.target===ov)closeOv()});
 document.addEventListener('keydown',e=>{
